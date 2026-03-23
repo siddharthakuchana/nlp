@@ -1,0 +1,68 @@
+class Node:
+    def __init__(self, value, children=None):
+        self.value = value
+        self.children = children if children else []
+
+# Grammar
+productions = {
+    "S": [["NP", "VP"]],
+    "NP": [["Det", "N"]],
+    "VP": [["V", "NP"]],
+    "Det": [["the"], ["a"]],
+    "N": [["boy"], ["ball"], ["girl"]],
+    "V": [["hit"], ["run"]]
+}
+
+# Print tree
+def print_tree(node, level=0):
+    print("  " * level + node.value)
+    for child in node.children:
+        print_tree(child, level + 1)
+
+# 🔥 MANUAL INPUT
+sentence = input("Enter sentence: ").lower().split()
+
+stack = []
+input_buffer = sentence.copy()
+
+print("\nSTACK\t\tINPUT\t\tACTION")
+
+while True:
+    # SHIFT
+    if input_buffer:
+        word = input_buffer.pop(0)
+        stack.append(Node(word))
+        print([n.value for n in stack], "\t", input_buffer, "\t Shift")
+
+    # REDUCE
+    reduced = True
+    while reduced:
+        reduced = False
+        for head, bodies in productions.items():
+            for body in bodies:
+                if len(stack) >= len(body):
+                    if [n.value for n in stack[-len(body):]] == body:
+
+                        children = stack[-len(body):]
+                        stack = stack[:-len(body)]
+                        stack.append(Node(head, children))
+
+                        print([n.value for n in stack], "\t\t", input_buffer,
+                              "\t\t Reduce:", head, "->", body)
+
+                        reduced = True
+                        break
+            if reduced:
+                break
+
+    # ACCEPT
+    if len(stack) == 1 and stack[0].value == "S" and not input_buffer:
+        print("\n✅ Successfully Parsed!\n")
+        print("🌳 Parse Tree:\n")
+        print_tree(stack[0])
+        break
+
+    # FAIL
+    if not input_buffer and not reduced:
+        print("\n❌ Parsing Failed")
+        break
