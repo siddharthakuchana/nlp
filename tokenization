@@ -1,0 +1,37 @@
+def advance_tokenize(text):
+  tokens=[]
+  word=""
+  i=0
+  while i<len(text):
+    char=text[i]
+    if "A"<=char<="Z":
+      char=chr(ord(char)+32)
+    if "a"<=char<="z":
+      word+=char
+    elif "0"<=char<="9":
+      word+=char
+      if(i+2<len(text) and text[i+1]=="." and "0"<=text[i+2]<="9"):
+        word+="."
+        i+=1
+    elif char == "'":
+      pass
+    elif char=="-":
+      if word:
+        tokens.append(word)
+        word=""
+    elif char in ".?!":
+      if word:
+        tokens.append(word)
+        word=""
+      tokens.append(char)
+    else:
+      if word:
+        tokens.append(word)
+        word=""
+    i+=1
+  if word:
+    tokens.append(word)
+  return tokens
+
+text=input("enter the sentence : ")
+print("result: ",advance_tokenize(text))
