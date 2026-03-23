@@ -1,0 +1,18 @@
+import nltk
+from nltk.grammar import DependencyGrammar
+from nltk.parse import ProjectiveDependencyParser
+grammar=DependencyGrammar.fromstring("""
+'chases' -> 'dog'|'cat'|'boy'|'girl'
+'eats' -> 'dog'|'cat'|'boy'|'girl'
+'sees' -> 'dog'|'cat'|'boy'|'girl'
+'dog' -> 'the'|'a'
+'cat' -> 'the'|'a'
+'boy' -> 'the'|'a'
+'girl' -> 'the'|'a'
+""")
+parser=ProjectiveDependencyParser(grammar)
+sentence=input("enter sentence: ").lower().split()  
+print("\nDependency Tree: ")
+for tree in parser.parse(sentence):
+  tree.pretty_print()
+
