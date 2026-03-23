@@ -1,0 +1,47 @@
+def ps(word):
+  word=word.lower()
+  if word.endswith("sses"):
+    word=word[:-2]
+  elif word.endswith("ies"):
+    word=word[:-2]
+  elif word.endswith("ss"):
+    pass
+  elif word.endswith("s"):
+    word=word[:-1]
+  if word.endswith("eed"):
+    word=word[:-1]
+  elif word.endswith("ed"):
+    stem=word[:-2]
+    if any (vowel in stem for vowel in "aeiou"):
+      word=stem
+  elif word.endswith("ing"):
+    stem=word[:-3]
+    if any (vowel in stem for vowel in "aeiou"):
+      word=stem
+  if word.endswith("y"):
+    stem=word[:-1]
+    if any (vowel in stem for vowel in "aeiou"):
+      word=stem+"i"
+  suffix_map={
+      "ational ":"ate",
+      "tional":"tion",
+      "izer":"ize",
+      "fulness":"ful",
+      "iveness":"ive",
+      "ousness":"ous",
+  }
+  for suffix in suffix_map:
+    if word.endswith(suffix):
+      word=word[:-len(suffix)]+suffix_map[suffix]
+      break
+  if word.endswith("icate"):
+    word=word[:-5]+"ic"
+  elif word.endswith("ative"):
+    word=word[:-5]
+  elif word.endswith("alize"):
+    word=word[:-5]+"al"
+  return word
+
+word =input("enter the word : ")
+print("result: ",ps(word))
+
