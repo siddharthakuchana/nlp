@@ -1,0 +1,23 @@
+Morphological analysis
+n= int(input("enter the number of wrods in dictionary: "))
+dictionary=[]
+for i in range(n):
+    word=input(f"enter word{i+1}: ").lower()
+    dictionary.append(word)
+print("dictionary: ",dictionary)
+
+def morphological_analysis(word, dictionary ):
+    word=word.lower()
+    if word in dictionary:
+        return word
+    suffixes = ['ing','ed','s']
+    for suffix in suffixes:
+        if word.endswith(suffix):
+            root=word[:-len(suffix)]
+            if root in dictionary:
+                return root
+    return "root not found"
+    
+test=input("enter thw word to test: ") 
+result= morphological_analysis(test, dictionary)
+print("root is : ",result)
