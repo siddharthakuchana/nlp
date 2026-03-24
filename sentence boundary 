@@ -1,0 +1,69 @@
+# ---------------- SENTENCE BOUNDARY DETECTION USING ML ----------------
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
+# ---------------- TRAINING DATA ----------------
+# 1 = Sentence Boundary
+# 0 = Not Sentence Boundary (Abbreviation)
+
+training_data = [
+    ("Mr.", 0),
+    ("Dr.", 0),
+    ("U.S.", 0),
+    ("etc.", 0),
+    ("Prof.", 0),
+    ("Hello.", 1),
+    ("How are you?", 1),
+    ("This is good.", 1),
+    ("She is coming.", 1),
+    ("He went home.", 1),
+]
+
+# Separate text and labels
+texts = [x[0] for x in training_data]
+labels = [x[1] for x in training_data]
+
+# ---------------- VECTORIZE TEXT ----------------
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(texts)
+
+# ---------------- TRAIN MODEL ----------------
+model = MultinomialNB()
+model.fit(X, labels)
+
+# ---------------- FUNCTION ----------------
+def sentence_boundary_ml(text):
+    sentences = []
+    words = text.split()
+    current_sentence = ""
+
+    for word in words:
+        current_sentence += word + " "
+
+        # Check punctuation
+        if word.endswith((".", "?", "!")):
+            test_vector = vectorizer.transform([word])
+            prediction = model.predict(test_vector)
+
+            # If model says it is sentence boundary
+            if prediction[0] == 1:
+                sentences.append(current_sentence.strip())
+                current_sentence = ""
+
+    # Add remaining sentence (if any)
+    if current_sentence:
+        sentences.append(current_sentence.strip())
+
+    return sentences
+
+
+# ---------------- USER INPUT ----------------
+text = input("Enter a paragraph: ")
+
+# ---------------- OUTPUT ----------------
+result = sentence_boundary_ml(text)
+
+print("\nDetected Sentences:")
+for i, sentence in enumerate(result, 1):
+    print(f"{i}. {sentence}")
