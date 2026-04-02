@@ -1,3 +1,6 @@
+
+//porter stemmer 
+
 def ps(word):
   word=word.lower()
   if word.endswith("sses"):
