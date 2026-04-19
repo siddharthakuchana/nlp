@@ -1,0 +1,62 @@
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
+# ---------------- TRAINING DATA ----------------
+# 1 = Topic Boundary
+# 0 = Same Topic
+
+training_data = [
+    ("Machine learning AI data models", 0),
+    ("Neural networks deep learning algorithms", 0),
+    ("Football sports match players stadium", 1),
+    ("Cricket batting bowling score match", 0),
+    ("Cooking recipes food ingredients kitchen", 1),
+    ("Baking cakes desserts oven sugar flour", 0),
+    ("Weather climate rain sunny forecast", 1),
+    ("Temperature humidity windstorm climate", 0),
+]
+
+# Separate text and labels
+texts = [x[0] for x in training_data]
+labels = [x[1] for x in training_data]
+
+# ---------------- VECTORIZE TEXT ----------------
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(texts)
+
+# ---------------- TRAIN MODEL ----------------
+model = MultinomialNB()
+model.fit(X, labels)
+
+# ---------------- FUNCTION ----------------
+def topic_boundary_ml(text):
+    sentences = text.split(". ")
+    topics = []
+    current_topic = sentences[0]
+
+    for i in range(1, len(sentences)):
+        prev = sentences[i - 1]
+        curr = sentences[i]
+
+        # combine both sentences as feature context
+        test_vector = vectorizer.transform([prev + " " + curr])
+        prediction = model.predict(test_vector)
+
+        if prediction[0] == 1:
+            topics.append(current_topic.strip())
+            current_topic = curr
+        else:
+            current_topic += ". " + curr
+
+    topics.append(current_topic.strip())
+    return topics
+
+# ---------------- USER INPUT ----------------
+text = input("Enter a paragraph: ")
+
+# ---------------- OUTPUT ----------------
+result = topic_boundary_ml(text)
+
+print("\nDetected Topics:")
+for i, topic in enumerate(result, 1):
+    print(f"{i}. {topic}")
