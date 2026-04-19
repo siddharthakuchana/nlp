@@ -1,23 +1,64 @@
-Morphological analysis
-n= int(input("enter the number of wrods in dictionary: "))
-dictionary=[]
-for i in range(n):
-    word=input(f"enter word{i+1}: ").lower()
-    dictionary.append(word)
-print("dictionary: ",dictionary)
+# ---------------- MORPHOLOGICAL ANALYSIS ----------------
 
-def morphological_analysis(word, dictionary ):
-    word=word.lower()
+n = int(input("Enter the number of words in dictionary: "))
+dictionary = []
+
+for i in range(n):
+    word = input(f"Enter word {i+1}: ").lower()
+    dictionary.append(word)
+
+print("Dictionary:", dictionary)
+
+
+def morphological_analysis(word, dictionary):
+    word = word.lower()
+
+    # Step 1: Direct match
     if word in dictionary:
         return word
-    suffixes = ['ing','ed','s']
-    for suffix in suffixes:
-        if word.endswith(suffix):
-            root=word[:-len(suffix)]
-            if root in dictionary:
-                return root
-    return "root not found"
-    
-test=input("enter thw word to test: ") 
-result= morphological_analysis(test, dictionary)
-print("root is : ",result)
+
+    # Step 2: Suffix rules
+
+    # ING
+    if word.endswith("ing"):
+        root = word[:-3]
+
+        # Handle double letter (running → run)
+        if len(root) > 1 and root[-1] == root[-2]:
+            root = root[:-1]
+
+        if root in dictionary:
+            return root
+
+    # ED
+    if word.endswith("ed"):
+        root = word[:-2]
+        if root in dictionary:
+            return root
+
+    # IES → Y
+    if word.endswith("ies"):
+        root = word[:-3] + "y"
+        if root in dictionary:
+            return root
+
+    # ES
+    if word.endswith("es"):
+        root = word[:-2]
+        if root in dictionary:
+            return root
+
+    # S
+    if word.endswith("s"):
+        root = word[:-1]
+        if root in dictionary:
+            return root
+
+    return "Root not found"
+
+
+# ---------------- TEST ----------------
+test = input("Enter the word to test: ")
+result = morphological_analysis(test, dictionary)
+
+print("Root is:", result)
