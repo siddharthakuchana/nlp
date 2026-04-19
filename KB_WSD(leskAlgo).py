@@ -1,42 +1,57 @@
-import nltk
-from nltk.corpus import wordnet as wn
-from nltk.tokenize import word_tokenize
+sense_dict = {
+    "bank": [
+        ("finance", "money deposit loan cash account"),
+        ("river", "water river shore land edge")
+    ],
+    "bat": [
+        ("animal", "night fly animal wings cave"),
+        ("sports", "cricket baseball bat hit ball")
+    ],
+    "plant": [
+        ("factory", "industry factory machines production manufacturing"),
+        ("living", "tree green leaves grow soil nature plant")
+    ],
 
-# --------- LESK FUNCTION ---------
-def lesk_wsd(sentence, target_word):
-    context = set(word_tokenize(sentence.lower()))
-    senses = wn.synsets(target_word)
+    "crane": [
+        ("bird", "bird fly wings long neck water"),
+        ("machine", "construction lift heavy machine crane building")
+    ],
 
-    if not senses:
-        return "No senses found in WordNet"
+    "match": [
+        ("game", "sports game cricket football competition players"),
+        ("fire", "stick fire light burn matchbox flame")
+    ],
+
+    "mouse": [
+        ("animal", "small animal rat tail cheese"),
+        ("computer", "device click computer screen pointer mouse")
+    ]
+}
+
+def simple_lesk(sentence, target_word):
+    context = set(sentence.lower().split())
+
+    if target_word not in sense_dict:
+        return "No senses available"
 
     best_sense = None
     max_overlap = 0
 
-    for sense in senses:
-        # definition + examples
-        gloss = sense.definition() + " " + " ".join(sense.examples())
-        gloss_words = set(word_tokenize(gloss.lower()))
+    for sense_name, gloss in sense_dict[target_word]:
+        gloss_words = set(gloss.split())
 
         overlap = len(context.intersection(gloss_words))
 
         if overlap > max_overlap:
             max_overlap = overlap
-            best_sense = sense
+            best_sense = sense_name
 
     return best_sense
 
 
-# --------- MAIN PROGRAM ---------
-
-sentence = input("Enter a sentence: ")
+sentence = input("Enter sentence: ")
 target_word = input("Enter target word: ").lower()
 
-sense = lesk_wsd(sentence, target_word)
+result = simple_lesk(sentence, target_word)
 
-if isinstance(sense, str):
-    print(sense)
-else:
-    print("\nBest Sense:", sense.name())
-    print("Definition:", sense.definition())
-    print("Examples:", sense.examples())
+print("\nBest Sense:", result)
