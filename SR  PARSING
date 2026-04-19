@@ -1,70 +1,89 @@
-//sr Parsing 
+from nltk.tree import Tree
 
-class Node:
-    def __init__(self, value, children=None):
-        self.value = value
-        self.children = children if children else []
+# Grammar:
+# E → E + T | T
+# T → id
 
-# Grammar
 productions = {
-    "S": [["NP", "VP"]],
-    "NP": [["Det", "N"]],
-    "VP": [["V", "NP"]],
-    "Det": [["the"], ["a"]],
-    "N": [["boy"], ["ball"], ["girl"]],
-    "V": [["hit"], ["run"]]
+    1: ("E", ["E", "+", "T"]),
+    2: ("E", ["T"]),
+    3: ("T", ["id"])
 }
 
-# Print tree
-def print_tree(node, level=0):
-    print("  " * level + node.value)
-    for child in node.children:
-        print_tree(child, level + 1)
+# SR Parsing Table
+ACTION = {
+    0: {'id': 's3'},
+    1: {'+': 's4', '$': 'acc'},
+    2: {'+': 'r2', '$': 'r2'},
+    3: {'+': 'r3', '$': 'r3'},
+    4: {'id': 's3'},
+    5: {'+': 'r1', '$': 'r1'}
+}
 
-# 🔥 MANUAL INPUT
-sentence = input("Enter sentence: ").lower().split()
+GOTO = {
+    0: {'E':1, 'T':2},
+    4: {'T':5}
+}
 
-stack = []
-input_buffer = sentence.copy()
+# -------- Print Table --------
+print("SR Parsing Table:\n")
+print("State\tid\t+\t$\tE\tT")
 
-print("\nSTACK\t\tINPUT\t\tACTION")
+for state in range(6):
+    row = [
+        str(state),
+        ACTION.get(state, {}).get('id', '-'),
+        ACTION.get(state, {}).get('+', '-'),
+        ACTION.get(state, {}).get('$', '-'),
+        str(GOTO.get(state, {}).get('E', '-')),
+        str(GOTO.get(state, {}).get('T', '-'))
+    ]
+    print("\t".join(row))
 
-while True:
-    # SHIFT
-    if input_buffer:
-        word = input_buffer.pop(0)
-        stack.append(Node(word))
-        print([n.value for n in stack], "\t", input_buffer, "\t Shift")
 
-    # REDUCE
-    reduced = True
-    while reduced:
-        reduced = False
-        for head, bodies in productions.items():
-            for body in bodies:
-                if len(stack) >= len(body):
-                    if [n.value for n in stack[-len(body):]] == body:
+# -------- Parser --------
+def parse(tokens):
+    stack = [0]
+    symbols = []
+    tokens.append('$')
 
-                        children = stack[-len(body):]
-                        stack = stack[:-len(body)]
-                        stack.append(Node(head, children))
+    print("\nParsing Steps:")
+    print("STACK\tINPUT\tACTION")
 
-                        print([n.value for n in stack], "\t\t", input_buffer,
-                              "\t\t Reduce:", head, "->", body)
+    while True:
+        state = stack[-1]
+        token = tokens[0]
+        action = ACTION[state].get(token)
 
-                        reduced = True
-                        break
-            if reduced:
-                break
+        print(stack, tokens, action)
 
-    # ACCEPT
-    if len(stack) == 1 and stack[0].value == "S" and not input_buffer:
-        print("\n✅ Successfully Parsed!\n")
-        print("🌳 Parse Tree:\n")
-        print_tree(stack[0])
-        break
+        if action == 'acc':
+            return symbols[0]
 
-    # FAIL
-    if not input_buffer and not reduced:
-        print("\n❌ Parsing Failed")
-        break
+        elif action[0] == 's':  # shift
+            stack.append(token)
+            stack.append(int(action[1:]))
+            symbols.append(token)
+            tokens.pop(0)
+
+        elif action[0] == 'r':  # reduce
+            lhs, rhs = productions[int(action[1:])]
+
+            for _ in range(len(rhs)*2):
+                stack.pop()
+
+            state = stack[-1]
+            stack.append(lhs)
+            stack.append(GOTO[state][lhs])
+
+            children = symbols[-len(rhs):]
+            symbols = symbols[:-len(rhs)]
+            symbols.append(Tree(lhs, children))
+
+
+# -------- Run --------
+tree = parse(['id', '+', 'id'])
+
+print("\nParse Tree:")
+print(tree)
+tree.pretty_print()
