@@ -1,89 +1,29 @@
-from nltk.tree import Tree
+import nltk
+from nltk import CFG
+from nltk.parse import ShiftReduceParser
 
-# Grammar:
-# E → E + T | T
-# T → id
+g = CFG.fromstring("""
+S -> NP VP
+NP -> DT NN
+VP -> V NP
+DT -> 'the'
+NN -> 'boy' | 'ball'
+V -> 'hit'
+""")
 
-productions = {
-    1: ("E", ["E", "+", "T"]),
-    2: ("E", ["T"]),
-    3: ("T", ["id"])
-}
+p = ShiftReduceParser(g)
+s = "the boy hit the ball".split()
 
-# SR Parsing Table
-ACTION = {
-    0: {'id': 's3'},
-    1: {'+': 's4', '$': 'acc'},
-    2: {'+': 'r2', '$': 'r2'},
-    3: {'+': 'r3', '$': 'r3'},
-    4: {'id': 's3'},
-    5: {'+': 'r1', '$': 'r1'}
-}
+print("STACK\t\tINPUT\t\tACTION")
+stk = []
+inp = s[:]
 
-GOTO = {
-    0: {'E':1, 'T':2},
-    4: {'T':5}
-}
+for w in s:
+    stk.append(w)
+    inp.pop(0)
+    print(stk, "\t", inp, "\tSHIFT")
 
-# -------- Print Table --------
-print("SR Parsing Table:\n")
-print("State\tid\t+\t$\tE\tT")
+print(stk, "\t", inp, "\tREDUCE\n")
 
-for state in range(6):
-    row = [
-        str(state),
-        ACTION.get(state, {}).get('id', '-'),
-        ACTION.get(state, {}).get('+', '-'),
-        ACTION.get(state, {}).get('$', '-'),
-        str(GOTO.get(state, {}).get('E', '-')),
-        str(GOTO.get(state, {}).get('T', '-'))
-    ]
-    print("\t".join(row))
-
-
-# -------- Parser --------
-def parse(tokens):
-    stack = [0]
-    symbols = []
-    tokens.append('$')
-
-    print("\nParsing Steps:")
-    print("STACK\tINPUT\tACTION")
-
-    while True:
-        state = stack[-1]
-        token = tokens[0]
-        action = ACTION[state].get(token)
-
-        print(stack, tokens, action)
-
-        if action == 'acc':
-            return symbols[0]
-
-        elif action[0] == 's':  # shift
-            stack.append(token)
-            stack.append(int(action[1:]))
-            symbols.append(token)
-            tokens.pop(0)
-
-        elif action[0] == 'r':  # reduce
-            lhs, rhs = productions[int(action[1:])]
-
-            for _ in range(len(rhs)*2):
-                stack.pop()
-
-            state = stack[-1]
-            stack.append(lhs)
-            stack.append(GOTO[state][lhs])
-
-            children = symbols[-len(rhs):]
-            symbols = symbols[:-len(rhs)]
-            symbols.append(Tree(lhs, children))
-
-
-# -------- Run --------
-tree = parse(['id', '+', 'id'])
-
-print("\nParse Tree:")
-print(tree)
-tree.pretty_print()
+for t in p.parse(s):
+    t.pretty_print()
